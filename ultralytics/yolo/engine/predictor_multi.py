@@ -56,7 +56,6 @@ STREAM_WARNING = """
             probs = r.probs  # Class probabilities for classification outputs
 """
 
-
 class BasePredictor:
     """
     BasePredictor
@@ -216,6 +215,7 @@ class BasePredictor:
 
     @smart_inference_mode()
     def stream_inference(self, source=None, model=None):
+        global only_inference_time
         """Streams real-time inference on camera feed and saves results to file."""
         if self.args.verbose:
             LOGGER.info('')
@@ -286,13 +286,21 @@ class BasePredictor:
                 #     self.show(p)
 
                 if self.args.save and self.plotted_img is not None:
-                    self.save_preds(vid_cap, i, str(self.save_dir / p.name))
+                    #수정 0
+                    im0 = self.save_preds(vid_cap, i, str(self.save_dir / p.name))
             # self.run_callbacks('on_predict_batch_end')
 
 
             # Print time (inference-only)
             if self.args.verbose:
                 LOGGER.info(f'{s}{profilers[1].dt * 1E3:.1f}ms')
+                only_inference_time = str((f'{profilers[1].dt * 1E3:.1f}ms'))
+                #print(type(str(LOGGER.info(f'{profilers[1].dt * 1E3:.1f}ms'))))
+                print("순수 추정 시간 : ", only_inference_time)
+                #print("타입 확인")
+                #print(type(LOGGER.info(f'{profilers[1].dt * 1E3:.1f}ms')))
+        #수정 1
+        #return im0
 
         # Release assets
         # if isinstance(self.vid_writer[-1], cv2.VideoWriter):
@@ -338,7 +346,8 @@ class BasePredictor:
     def save_preds(self, vid_cap, idx, save_path):
         """Save video predictions as mp4 at specified path."""
         im0_list = self.plotted_img
-
+        #print("plotted_img_type설명")
+        #print(type(self.plotted_img))
         # Save imgs
         if self.dataset.mode == 'image':
             im0 = im0_list[0].copy()  # We create a copy so that we don't modify the original image
@@ -363,9 +372,9 @@ class BasePredictor:
 
             # Save the final image
             cv2.imwrite(save_path, im0)
-
-
-
+            #수정 2
+            #이미지 반환
+            #return img0
 
         else:  # 'video' or 'stream'
             if self.vid_path[idx] != save_path:  # new video
